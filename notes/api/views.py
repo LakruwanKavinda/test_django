@@ -61,3 +61,20 @@ def signup(request):
             return JsonResponse({'error': 'Invalid request'}, status=400)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+def user_login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        if username and password:
+            # Authenticate the user
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                return JsonResponse({'token': 'your_auth_token'}, status=200)
+            else:
+                return JsonResponse({'error': 'Invalid username or password'}, status=400)
+        else:
+            return JsonResponse({'error': 'Invalid request'}, status=400)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
