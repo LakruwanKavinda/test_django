@@ -1,15 +1,17 @@
 from django.db import models
 
-# Create your models here.
-
 
 class Note(models.Model):
     body = models.TextField()
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    def __str__(self):  # Corrected method name
         return self.body[0:50]
 
     class Meta:
         ordering = ['-updated']
+
+
+class PDFFile(models.Model):
+    # Your model fields and methods here
