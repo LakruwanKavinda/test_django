@@ -1,5 +1,13 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+import json  # Add import for json module
+
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+
+from .models import PDFFile
 
 
 @api_view(['GET'])
@@ -38,6 +46,8 @@ def getRoutes(request):
     ]
     return Response(routes)
 
+# Rest of the views...
+
 
 def signup(request):
     if request.method == 'POST':
@@ -62,6 +72,7 @@ def signup(request):
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
+
 def user_login(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -78,3 +89,38 @@ def user_login(request):
             return JsonResponse({'error': 'Invalid request'}, status=400)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+def upload_pdf_view(request):
+    if request.method == 'POST':
+        form = UploadPDFForm(request.POST, request.FILES)
+        if form.is_valid():
+
+            pdf_file = form.cleaned_data['pdf_file']
+
+    else:
+        form = UploadPDFForm()
+    return render(request, 'upload_pdf.html', {'form': form})
+
+
+def search_pdf(request):
+    if request.method == 'GET':
+        query = request.GET.get('query')
+        if query:
+            # Perform search based on the query
+            pdf_files = PDFFile.objects.filter(title__icontains=query)
+        else:
+            # If no query provided, return all PDF files
+            pdf_files = PDFFile.objects.all()
+
+        return render(request, 'search_results.html', {'pdf_files': pdf_files, 'query': query})
+
+
+def show_pdf(request, pdf_id):
+    pdf_file = get_object_or_404(PDFFile, pk=pdf_id)
+
+    # Assuming 'pdf_file' field is a FileField or FilePathField
+    with open(pdf_file.pdf_file.path, 'rb') as f:
+        response = HttpResponse(f.read(), content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="{pdf_file.title}.pdf"'
+        return response
