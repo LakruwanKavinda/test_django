@@ -116,11 +116,10 @@ def search_pdf(request):
         return render(request, 'search_results.html', {'pdf_files': pdf_files, 'query': query})
 
 
-def show_pdf(request, pdf_id):
-    pdf_file = get_object_or_404(PDFFile, pk=pdf_id)
-
-    # Assuming 'pdf_file' field is a FileField or FilePathField
-    with open(pdf_file.pdf_file.path, 'rb') as f:
-        response = HttpResponse(f.read(), content_type='application/pdf')
-        response['Content-Disposition'] = f'inline; filename="{pdf_file.title}.pdf"'
+def view_pdf(request, pdf_id):
+    pdf = get_object_or_404(PDFFile, pk=pdf_id)
+    with open(pdf.pdf_file.path, 'rb') as pdf_file:
+        response = HttpResponse(
+            pdf_file.read(), content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="{pdf.title}.pdf"'
         return response
