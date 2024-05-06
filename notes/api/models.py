@@ -1,17 +1,12 @@
 from django.db import models
 
 
-class Note(models.Model):
-    body = models.TextField()
-    updated = models.DateTimeField(auto_now=True)
-    created = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):  # Corrected method name
-        return self.body[0:50]
-
-    class Meta:
-        ordering = ['-updated']
-
-
 class PDFFile(models.Model):
-    # Your model fields and methods here
+    # Assuming a title field is necessary for search
+    title = models.CharField(max_length=255)
+    # Example file field for uploading PDFs
+    pdf_file = models.FileField(upload_to='pdf_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
