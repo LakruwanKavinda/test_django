@@ -6,4 +6,6 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('upload_pdf/', views.upload_pdf, name='upload_pdf'),
     path('search_pdf/', views.search_pdf, name='search_pdf'),
+    path('generate_story/', views.generate_story, name='generate_story'),
+    path('view_pdf/<int:pdf_id>/', views.view_pdf, name='view_pdf'),
 ]
