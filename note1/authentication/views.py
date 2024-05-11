@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 
 def signup(request):
@@ -55,3 +56,26 @@ def search_pdf(request):
             return JsonResponse({'message': 'Please provide a search query'}, status=400)
     else:
         return JsonResponse({'message': 'Invalid request'}, status=400)
+
+def generate_story(request):
+    if request.method == 'POST':
+        topic = request.POST.get('topic')
+        if topic:
+            prompt = f"Generate a story about {topic}."
+            response = openai.Completion.create(
+                engine="text-davinci-003",  # Choose the GPT-3 model you prefer
+                prompt=prompt,
+                max_tokens=200  # Adjust the maximum length of the generated story
+            )
+            story = response.choices[0].text.strip()
+            return JsonResponse({'story': story})
+        else:
+            return JsonResponse({'message': 'Please provide a topic'}, status=400)
+    else:
+        return JsonResponse({'message': 'Invalid request'}, status=400)
+
+
+def view_pdf(request, pdf_id):
+    pdf = get_object_or_404(PDFFile, pk=pdf_id)
+    return JsonResponse({'url': pdf.file.url})
+
