@@ -5,6 +5,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
+# chat
+from django.contrib.auth.decorators import login_required
+
 
 def signup(request):
     if request.method == 'POST':
@@ -79,3 +82,28 @@ def view_pdf(request, pdf_id):
     pdf = get_object_or_404(PDFFile, pk=pdf_id)
     return JsonResponse({'url': pdf.file.url})
 
+
+
+# chat
+@login_required
+def send_message(request):
+    if request.method == 'POST':
+        receiver_id = request.POST.get('receiver_id')
+        content = request.POST.get('content')
+        receiver = User.objects.get(pk=receiver_id)
+        message = Message.objects.create(
+            sender=request.user, receiver=receiver, content=content)
+        return JsonResponse({'message_id': message.pk})
+    else:
+        return JsonResponse({'message': 'Invalid request'}, status=400)
+
+
+@login_required
+def get_messages(request):
+    if request.method == 'GET':
+        messages = Message.objects.filter(receiver=request.user)
+        message_data = [{'sender': message.sender.username, 'content': message.content,
+                         'timestamp': message.timestamp} for message in messages]
+        return JsonResponse({'messages': message_data})
+    else:
+        return JsonResponse({'message': 'Invalid request'}, status=400)
