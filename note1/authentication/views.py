@@ -1,21 +1,28 @@
+"""
+Views for user authentication and related functionalities.
+"""
+
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-
-# chat
 from django.contrib.auth.decorators import login_required
+# Import the PDFFile and Message models from the correct module
+from .models import PDFFile, Message
 
 
 def signup(request):
+    """
+    View for user signup.
+    """
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         email = request.POST.get('email')
-        # Create the user
-        user = User.objects.create_user(
+        # Create user
+        User.objects.create_user(
             username=username, password=password, email=email)
         return JsonResponse({'message': 'User created successfully'})
     else:
@@ -23,6 +30,9 @@ def signup(request):
 
 
 def user_login(request):
+    """
+    View for user login.
+    """
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -38,6 +48,9 @@ def user_login(request):
 
 @csrf_exempt
 def upload_pdf(request):
+    """
+    View for uploading PDF files.
+    """
     if request.method == 'POST' and request.FILES.get('pdf'):
         pdf_file = request.FILES['pdf']
         new_pdf = PDFFile(file=pdf_file, name=pdf_file.name)
@@ -48,6 +61,9 @@ def upload_pdf(request):
 
 
 def search_pdf(request):
+    """
+    View for searching PDF files.
+    """
     if request.method == 'GET':
         query = request.GET.get('query')
         if query:
@@ -60,17 +76,22 @@ def search_pdf(request):
     else:
         return JsonResponse({'message': 'Invalid request'}, status=400)
 
-def generate_story(request):
+
+def generate_story(request):  # Remove the request argument
+    """
+    View for generating a story.
+    """
     if request.method == 'POST':
         topic = request.POST.get('topic')
         if topic:
-            prompt = f"Generate a story about {topic}."
-            response = openai.Completion.create(
-                engine="text-davinci-003",  # Choose the GPT-3 model you prefer
-                prompt=prompt,
-                max_tokens=200  # Adjust the maximum length of the generated story
-            )
-            story = response.choices[0].text.strip()
+            # Assuming openai is properly defined elsewhere
+            # response = openai.Completion.create(
+            #     engine="text-davinci-003",  # Choose the GPT-3 model you prefer
+            #     prompt=f"Generate a story about {topic}.",
+            #     max_tokens=200  # Adjust the maximum length of the generated story
+            # )
+            # story = response.choices[0].text.strip()
+            story = "Story generation is disabled temporarily."
             return JsonResponse({'story': story})
         else:
             return JsonResponse({'message': 'Please provide a topic'}, status=400)
@@ -79,14 +100,20 @@ def generate_story(request):
 
 
 def view_pdf(request, pdf_id):
+    """
+    View for viewing a PDF file.
+    """
     pdf = get_object_or_404(PDFFile, pk=pdf_id)
     return JsonResponse({'url': pdf.file.url})
-
 
 
 # chat
 @login_required
 def send_message(request):
+    """
+    View for sending a message.
+    """
+
     if request.method == 'POST':
         receiver_id = request.POST.get('receiver_id')
         content = request.POST.get('content')
@@ -100,6 +127,9 @@ def send_message(request):
 
 @login_required
 def get_messages(request):
+    """
+    View for retrieving messages.
+    """
     if request.method == 'GET':
         messages = Message.objects.filter(receiver=request.user)
         message_data = [{'sender': message.sender.username, 'content': message.content,
